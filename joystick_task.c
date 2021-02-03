@@ -113,8 +113,8 @@ void task_joystick(void* param)
     result = TLx493D_init();
     if (result != CY_RSLT_SUCCESS)
     {
-    	printError("Failed on Sensor Init", result);
-        CY_ASSERT(0);
+   		printError("Joystick not detected. Exiting Joystick task.", result);
+    	vTaskDelete(NULL);
     }
 
     /* Set Sensor to Master Control Mode */

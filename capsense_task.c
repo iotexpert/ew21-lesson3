@@ -79,7 +79,7 @@ cyhal_ezi2c_t sEzI2C;
 cyhal_ezi2c_slave_cfg_t sEzI2C_sub_cfg;
 cyhal_ezi2c_cfg_t sEzI2C_cfg;
 
-bool useJoystick=true;
+bool useJoystick=false;
 
 typedef enum
 {
@@ -143,7 +143,7 @@ void task_capsense(void* param)
     }
     else
     {
-    	printf("Using Joystick for Position\n");
+    	printf("Using CapSense for Position\n");
     }
 
     /* Start the timer */
