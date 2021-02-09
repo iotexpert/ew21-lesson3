@@ -131,7 +131,7 @@ void task_joystick(void* param)
 
     	/* Read latest Joystick values and print if that is the user's choice for input method */
     	/* The input method is chosen using CapSense buttons */
-    	if(useJoystick == true)
+    	if(useCapSense == false)
     	{
     		/* Read a data frame from the sensor */
 			result = TLx493D_read_frame(&frame);
