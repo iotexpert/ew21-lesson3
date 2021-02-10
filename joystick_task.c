@@ -49,7 +49,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "capsense_task.h"
 #include "joystick_task.h"
 
 #include "PSoC_TLx_interface.h"
@@ -75,7 +74,7 @@ void printError(char* string, cy_rslt_t result);
 * Function Name: task_joystick
 ********************************************************************************
 * Summary:
-*  Task that initializes the CapSense block and processes the touch input.
+*  Task that initializes the Joystick block and processes the input.
 *
 * Parameters:
 *  void *param : Task parameter defined during task creation (unused)
@@ -113,7 +112,7 @@ void task_joystick(void* param)
     result = TLx493D_init();
     if (result != CY_RSLT_SUCCESS)
     {
-   		printError("Joystick not detected. Exiting Joystick task.", result);
+    	printError("Joystick not detected. Exiting Joystick task.", result);
     	vTaskDelete(NULL);
     }
 
@@ -124,57 +123,55 @@ void task_joystick(void* param)
     	printError("Failed on Set Sensor Operation Mode", result);
         CY_ASSERT(0);
     }
+    else
+    {
+    	printf("Joystick Initialized\n");
+    }
 
     /* Repeatedly running part of the task */
     for(;;)
     {
+		/* Read a data frame from the sensor */
+		result = TLx493D_read_frame(&frame);
 
-    	/* Read latest Joystick values and print if that is the user's choice for input method */
-    	/* The input method is chosen using CapSense buttons */
-    	if(useCapSense == false)
-    	{
-    		/* Read a data frame from the sensor */
-			result = TLx493D_read_frame(&frame);
+		if (result == CY_RSLT_SUCCESS)
+		{
+			/* To calculate the Joystick angle,  we need to convert to spherical coordinates */
+			radius = sqrt( pow((float)frame.x, 2) + pow((float)frame.y, 2) + pow((float)frame.z, 2) );
+			theta = acos ((float)frame.z/radius);
 
-			if (result == CY_RSLT_SUCCESS)
+			/* Convert theta to a range of 0 to 50 instead of 0 to PI/2 for one quadrant */
+			theta = theta * 100 / PI;
+			/* Cap the max at 50 */
+			if(theta > 50)
 			{
-				/* To calculate the Joystick angle,  we need to convert to spherical coordinates */
-				radius = sqrt( pow((float)frame.x, 2) + pow((float)frame.y, 2) + pow((float)frame.z, 2) );
-				theta = acos ((float)frame.z/radius);
-
-				/* Convert theta to a range of 0 to 50 instead of 0 to PI/2 for one quadrant */
-				theta = theta * 100 / PI;
-				/* Cap the max at 50 */
-				if(theta > 50)
-				{
-					theta = 50;
-				}
-
-				if (frame.x < 0) /* Joystick is right - we want values from 50 to 100 where 50 is vertical and 100 is right */
-				{
-					joystick_x = (int8_t)(theta + 50);
-				}
-				else /* Joystick is left - we want values from 0 to 50 where 0 is left and 50 is vertical */
-				{
-					joystick_x = (int8_t)(50 - theta) ;
-				}
-
-				/* Only update/print new value if it has changed by more than the hysteresis value */
-				if((joystick_x > (joystick_x_prev + JOYSTICK_HYSTERESIS)) || (joystick_x < (joystick_x_prev - JOYSTICK_HYSTERESIS)))
-				{
-					printf("Joystick X Angle: %d  Raw  X: %d,  Y: %d,  Z: %d\n", joystick_x, frame.x, frame.y, frame.z);
-					joystick_x_prev = joystick_x;
-				}
+				theta = 50;
 			}
-			else
+
+			if (frame.x < 0) /* Joystick is right - we want values from 50 to 100 where 50 is vertical and 100 is right */
 			{
-				printError("Sensor Read Failed", result);
+				joystick_x = (int8_t)(theta + 50);
 			}
-    	}
+			else /* Joystick is left - we want values from 0 to 50 where 0 is left and 50 is vertical */
+			{
+				joystick_x = (int8_t)(50 - theta) ;
+			}
+
+			/* Only update/print new value if it has changed by more than the hysteresis value */
+			if((joystick_x > (joystick_x_prev + JOYSTICK_HYSTERESIS)) || (joystick_x < (joystick_x_prev - JOYSTICK_HYSTERESIS)))
+			{
+				printf("Joystick X Angle: %d\n", joystick_x);
+				joystick_x_prev = joystick_x;
+			}
+		}
+		else
+		{
+			printError("Sensor Read Failed", result);
+		}
+    	
 
         /* Wait until next period to read the Joystick */
         vTaskDelay(JOYSTICK_INTERVAL_MS);
-
     }
 }
 
