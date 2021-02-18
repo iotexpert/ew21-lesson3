@@ -2,30 +2,16 @@
 #include "cyhal.h"
 #include "cybsp.h"
 #include "cy_retarget_io.h"
+
 #include <stdio.h>
+
 #include "FreeRTOS.h"
 #include "task.h"
 
-#include "cloud_task.h"
-#include "capsense_task.h"
 #include "joystick_task.h"
-
-/* Priorities of user tasks in this project. configMAX_PRIORITIES is defined in
- * the FreeRTOSConfig.h and higher priority numbers denote high priority tasks.
- * The idle task has a priority of 0. */
-#define TASK_CLOUD_PRIORITY         (configMAX_PRIORITIES - 1)
-#define TASK_CAPSENSE_PRIORITY      (configMAX_PRIORITIES - 2)
-#define TASK_JOYSTICK_PRIORITY      (configMAX_PRIORITIES - 3)
-
-/* Stack sizes of user tasks in this project (in WORDs) */
-#define TASK_CLOUD_STACK_SIZE       (configMINIMAL_STACK_SIZE*8)
-#define TASK_CAPSENSE_STACK_SIZE    (configMINIMAL_STACK_SIZE)
-#define TASK_JOYSTICK_STACK_SIZE    (configMINIMAL_STACK_SIZE*4)
-
+#include "capsense_task.h"
+#include "cloud_task.h"
 volatile int uxTopUsedPriority ;
-TaskHandle_t cloudTaskHandle;
-TaskHandle_t capSenseTaskHandle;
-TaskHandle_t joystickTaskHandle;
 
 int main(void)
 {
@@ -41,10 +27,9 @@ int main(void)
 
     printf("Application Started\n");
 
-    xTaskCreate(task_cloud,    "Cloud Task",    TASK_CLOUD_STACK_SIZE,    NULL, TASK_CLOUD_PRIORITY,    &cloudTaskHandle);
-    xTaskCreate(task_capsense, "CapSense Task", TASK_CAPSENSE_STACK_SIZE, NULL, TASK_CAPSENSE_PRIORITY, &capSenseTaskHandle);
-    xTaskCreate(task_joystick, "Joystick Task", TASK_JOYSTICK_STACK_SIZE, NULL, TASK_JOYSTICK_PRIORITY, &joystickTaskHandle);
-
+    xTaskCreate(capsense_task, "CapSense", configMINIMAL_STACK_SIZE, NULL, (configMAX_PRIORITIES - 1), 0);
+    xTaskCreate(joystick_task, "Joystick", (configMINIMAL_STACK_SIZE*4), NULL, (configMAX_PRIORITIES - 3), 0);
+    xTaskCreate(cloud_task,    "cloud",    (configMINIMAL_STACK_SIZE*8), NULL, (configMAX_PRIORITIES - 1), 0);
     vTaskStartScheduler();
 }
 

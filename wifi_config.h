@@ -47,10 +47,10 @@
 * Macros
 ********************************************************************************/
 /* SSID of the Wi-Fi Access Point to which the MQTT client connects. */
-#define WIFI_SSID                         "YOUR_WIFI_SSID"
+#define WIFI_SSID                         "CYFI_IOT_EXT"
 
 /* Passkey of the above mentioned Wi-Fi SSID. */
-#define WIFI_PASSWORD                     "YOUR_WIFI_PASSWORD"
+#define WIFI_PASSWORD                     "cypresswicedwifi101"
 
 /* Security type of the Wi-Fi access point. See 'cy_wcm_security_t' structure
  * in "cy_wcm.h" for more details.

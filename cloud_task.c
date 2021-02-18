@@ -25,7 +25,8 @@
 * EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Cypress
 * reserves the right to make changes to the Software without notice. Cypress
-* does not assume any liability arising out of the application or use of the
+* does not assume any liabilit
+y arising out of the application or use of the
 * Software or any product or circuit described in the Software. Cypress does
 * not authorize its products for use in any products where a malfunction or
 * failure of the Cypress product may reasonably be expected to result in
@@ -35,10 +36,6 @@
 * indemnify Cypress against all liability.
 *****************************************​**************************************/
 
-
-/******************************************************************************
-* Header files includes
-******************************************************************************/
 #include "cybsp.h"
 #include "cyhal.h"
 #include "cycfg.h"
@@ -52,17 +49,6 @@
 #include "cloud_task.h"
 #include "wifi_config.h"
 
-/*******************************************************************************
-* Global constants
-*******************************************************************************/
-
-/*******************************************************************************
-* Function Prototypes
-*******************************************************************************/
-
-/******************************************************************************
-* Global variables
-******************************************************************************/
 
 /*******************************************************************************
 * Function Name: task_cloud
@@ -74,35 +60,29 @@
 *  void *param : Task parameter defined during task creation (unused)
 *
 *******************************************************************************/
-void task_cloud(void* param)
+void cloud_task(void* param)
 {
-
-    /* Remove warning for unused parameter */
     (void)param;
 
 	cy_rslt_t result;
-	cy_wcm_connect_params_t connect_param;
-	cy_wcm_ip_address_t ip_address;
-	uint32_t retry_count;
 
-    /* Connect to WiFi */
-	/* Configure the interface as a Wi-Fi STA (i.e. Client). */
-	cy_wcm_config_t config = {.interface = CY_WCM_INTERFACE_TYPE_STA};
+	cy_wcm_connect_params_t connect_param = {
+		.ap_credentials.SSID = "CYFI_IOT_EXT",
+		.ap_credentials.password = "cypresswicedwifi101",
+		.ap_credentials.security = CY_WCM_SECURITY_WPA2_AES_PSK,
+		.BSSID = {0},
+		.band = CY_WCM_WIFI_BAND_ANY,
+	};
+	cy_wcm_config_t config = {.interface = CY_WCM_INTERFACE_TYPE_STA}; // We are a station (not a Access Point)
 
-	/* Initialize the Wi-Fi Connection Manager and return if the operation fails. */
-	result = cy_wcm_init(&config);
+	cy_wcm_init(&config); // Initialize the connection manager
 
 	printf("\nWi-Fi Connection Manager initialized.\n");
 
-	/* Configure the connection parameters for the Wi-Fi interface. */
-	memset(&connect_param, 0, sizeof(cy_wcm_connect_params_t));
-	memcpy(connect_param.ap_credentials.SSID, WIFI_SSID, sizeof(WIFI_SSID));
-	memcpy(connect_param.ap_credentials.password, WIFI_PASSWORD, sizeof(WIFI_PASSWORD));
-	connect_param.ap_credentials.security = WIFI_SECURITY;
-
-	/* Connect to the Wi-Fi AP. */
-	for (retry_count = 0; retry_count < MAX_WIFI_CONN_RETRIES; retry_count++)
+	do
 	{
+		cy_wcm_ip_address_t ip_address;
+
 		printf("Connecting to Wi-Fi AP '%s'\n", connect_param.ap_credentials.SSID);
 		result = cy_wcm_connect_ap(&connect_param, &ip_address);
 
@@ -127,19 +107,10 @@ void task_cloud(void* param)
 
 			break; /* Exit the for loop once the connection has been made */
 		}
-	}
+		else
+			vTaskDelay(2000); // wait 2 seconds and try again;
 
-	if(result != CY_RSLT_SUCCESS)
-	{
-		printf("Connect to WiFi Failed!\n");
-	}
+	} while (result != CY_RSLT_SUCCESS);
 
-    /* Repeatedly running part of the task */
-    /* Nothing to do here (for now) so we will exit the task */
-    for(;;)
-    {
-    	vTaskDelete(NULL);
-    }
+	vTaskDelete(NULL);
 }
-
-/* END OF FILE [] */
