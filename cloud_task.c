@@ -1,69 +1,38 @@
-/*******************************************************************************
-* File Name: cloud_task.c
-*
-* Description: This file contains the task that handles cloud connectivity.
-*
-********************************************************************************
-* (c) 2019-2020, Cypress Semiconductor Corporation. All rights reserved.
-********************************************************************************
-* This software, including source code, documentation and related materials
-* (“Software”), is owned by Cypress Semiconductor Corporation or one of its
-* subsidiaries (“Cypress”) and is protected by and subject to worldwide patent
-* protection (United States and foreign), United States copyright laws and
-* international treaty provisions. Therefore, you may use this Software only
-* as provided in the license agreement accompanying the software package from
-* which you obtained this Software (“EULA”).
-*
-* If no EULA applies, Cypress hereby grants you a personal, nonexclusive,
-* non-transferable license to copy, modify, and compile the Software source
-* code solely for use in connection with Cypress’s integrated circuit products.
-* Any reproduction, modification, translation, compilation, or representation
-* of this Software except as specified above is prohibited without the express
-* written permission of Cypress.
-*
-* Disclaimer: THIS SOFTWARE IS PROVIDED AS-IS, WITH NO WARRANTY OF ANY KIND,
-* EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, NONINFRINGEMENT, IMPLIED
-* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. Cypress
-* reserves the right to make changes to the Software without notice. Cypress
-* does not assume any liabilit
-y arising out of the application or use of the
-* Software or any product or circuit described in the Software. Cypress does
-* not authorize its products for use in any products where a malfunction or
-* failure of the Cypress product may reasonably be expected to result in
-* significant property damage, injury or death (“High Risk Product”). By
-* including Cypress’s product in a High Risk Product, the manufacturer of such
-* system or application assumes all risk of such use and in doing so agrees to
-* indemnify Cypress against all liability.
-*****************************************​**************************************/
+
+#include <stdlib.h>
+#include <stdio.h>
 
 #include "cybsp.h"
 #include "cyhal.h"
 #include "cycfg.h"
+
 #include "FreeRTOS.h"
 #include "task.h"
-#include "cy_secure_sockets.h"
+
 #include "cy_wcm.h"
-#include <stdlib.h>
-#include <stdio.h>
 
 #include "cloud_task.h"
-#include "wifi_config.h"
 
 
-/*******************************************************************************
-* Function Name: task_cloud
-********************************************************************************
-* Summary:
-*  Task that initializes the connection to the cloud and handles MQTT messages.
-*
-* Parameters:
-*  void *param : Task parameter defined during task creation (unused)
-*
-*******************************************************************************/
+static void cloud_connectWifi();
+
+
 void cloud_task(void* param)
 {
     (void)param;
 
+	cloud_connectWifi();
+
+	while(1)
+	{
+		vTaskDelay(1);
+
+	}
+}
+
+
+static void cloud_connectWifi()
+{
 	cy_rslt_t result;
 
 	cy_wcm_connect_params_t connect_param = {
@@ -104,13 +73,13 @@ void cloud_task(void* param)
 						(unsigned int)ip_address.ip.v6[1], (unsigned int)ip_address.ip.v6[2],
 						(unsigned int)ip_address.ip.v6[3]);
 			}
-
 			break; /* Exit the for loop once the connection has been made */
 		}
 		else
+		{
+			printf("WiFi Connect Failed Retrying\n");
 			vTaskDelay(2000); // wait 2 seconds and try again;
+		}
 
 	} while (result != CY_RSLT_SUCCESS);
-
-	vTaskDelete(NULL);
 }
