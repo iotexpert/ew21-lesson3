@@ -1,10 +1,4 @@
-
-#include <stdlib.h>
 #include <stdio.h>
-
-#include "cybsp.h"
-#include "cyhal.h"
-#include "cycfg.h"
 
 #include "FreeRTOS.h"
 #include "task.h"
@@ -13,9 +7,12 @@
 
 #include "cloud_task.h"
 
+#define CLOUD_WIFI_AP        "Guest"
+#define CLOUD_WIFI_PW        ""
+#define CLOUD_WIFI_SECURITY  CY_WCM_SECURITY_OPEN
+#define CLOUD_WIFI_BAND      CY_WCM_WIFI_BAND_ANY
 
 static void cloud_connectWifi();
-
 
 void cloud_task(void* param)
 {
@@ -30,17 +27,16 @@ void cloud_task(void* param)
 	}
 }
 
-
 static void cloud_connectWifi()
 {
 	cy_rslt_t result;
 
 	cy_wcm_connect_params_t connect_param = {
-		.ap_credentials.SSID = "CYFI_IOT_EXT",
-		.ap_credentials.password = "cypresswicedwifi101",
-		.ap_credentials.security = CY_WCM_SECURITY_WPA2_AES_PSK,
+		.ap_credentials.SSID = CLOUD_WIFI_AP,
+		.ap_credentials.password = CLOUD_WIFI_PW,
+		.ap_credentials.security = CLOUD_WIFI_SECURITY,
 		.BSSID = {0},
-		.band = CY_WCM_WIFI_BAND_ANY,
+		.band = CLOUD_WIFI_BAND,
 	};
 	cy_wcm_config_t config = {.interface = CY_WCM_INTERFACE_TYPE_STA}; // We are a station (not a Access Point)
 
