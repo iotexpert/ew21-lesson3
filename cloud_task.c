@@ -7,9 +7,9 @@
 
 #include "cloud_task.h"
 
-#define CLOUD_WIFI_AP        "Guest"
-#define CLOUD_WIFI_PW        ""
-#define CLOUD_WIFI_SECURITY  CY_WCM_SECURITY_OPEN
+#define CLOUD_WIFI_AP        "ew2021"
+#define CLOUD_WIFI_PW        "ew2021ap"
+#define CLOUD_WIFI_SECURITY  CY_WCM_SECURITY_WPA2_MIXED_PSK
 #define CLOUD_WIFI_BAND      CY_WCM_WIFI_BAND_ANY
 
 static void cloud_connectWifi();
